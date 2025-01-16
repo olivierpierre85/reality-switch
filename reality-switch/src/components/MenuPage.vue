@@ -149,7 +149,8 @@ onMounted(() => {
   width: 100vw;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden; /* or auto */
+  overflow-y: auto;
 }
 
 /* Optional: center it all on the page */
@@ -157,7 +158,6 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* or some layout of your choosing */
 }
 
 /* Key point: shrink-wrap the image */
@@ -172,6 +172,7 @@ onMounted(() => {
   width: auto;
   height: auto;
   max-width: 100%; /* if you want it to be responsive but not forced to 100% height */
+  max-height: 100vh;
 }
 
 /* Timer absolutely positioned relative to .img-container */
