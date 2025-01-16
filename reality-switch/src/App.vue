@@ -1,23 +1,6 @@
 <template>
   <div class="app-container">
 
-    <!-- Timer and top bar actions could go here -->
-    <header>
-      <div class="timer">
-        <span>{{ formatTime(gameState.timeLeft) }}</span>
-      </div>
-
-      <!-- Play/Pause button -->
-      <button @click="toggleTimer">
-        {{ gameState.timerRunning ? 'Pause' : 'Play' }}
-      </button>
-
-      <!-- Penalty button -->
-      <button @click="applyPenalty">
-        -1 min
-      </button>
-    </header>
-
     <!-- Page content -->
     <component :is="currentPageComponent" />
 
