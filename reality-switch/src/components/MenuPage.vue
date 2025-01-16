@@ -1,20 +1,22 @@
 <template>
   <div class="menu-wrapper">
-    <!-- If you still want to center the entire image+timer on the page: -->
-    <div class="outer-center">
-      <div class="img-container">
-        <img
-          src="/images/menu.png"
-          alt="Menu"
-          usemap="#menuMap"
-        />
-        <div class="timer">
-          {{ formatTime(gameState.timeLeft) }}
-        </div>
+    <div class="img-container" ref="containerRef">
+      <!-- The background image -->
+      <img
+        src="/images/menu.png"
+        alt="Menu"
+        usemap="#menuMap"
+        ref="menuImage"
+        @load="onImageLoad"
+      />
+
+      <!-- Timer -->
+      <div class="timer" :style="timerStyle">
+        {{ formatTime(gameState.timeLeft) }}
       </div>
     </div>
 
-    <!-- If you still want clickable areas in the image map -->
+    <!-- Image map -->
     <map name="menuMap">
       <area 
         shape="rect"
@@ -23,173 +25,143 @@
         href="#"
         @click.prevent="openIndices"
       />
-      <area 
-        shape="rect"
-        coords="230,358,471,577"
-        alt="Play"
-        href="#"
-        @click.prevent="onPlayPause"
-      />
-
-      <area 
-        shape="rect"
-        coords="230,642,471,858"
-        alt="Penalty"
-        href="#"
-        @click.prevent="onPenalty"
-      />
-
-      <area 
-        shape="rect"
-        coords="510,570,695,785"
-        alt="Code TODO"
-        href="#"
-        @click.prevent="onPenalty"
-      />
-
-      <area 
-        shape="rect"
-        coords="40,875,280,1095"
-        alt="Object TODO"
-        href="#"
-        @click.prevent="onPenalty"
-      />
-
-      <area 
-        shape="rect"
-        coords="438,875,678,1095"
-        alt="Machine TODO"
-        href="#"
-        @click.prevent="onPenalty"
-      />
+      <!-- ... more areas ... -->
     </map>
   </div>
 </template>
 
-
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { gameState } from '../store/gameStore.js';
-import imageMapResize from 'image-map-resizer'; // Import the library
+import imageMapResize from 'image-map-resizer';
 
-/**
- * Format time from seconds to "mm:ss"
- */
-const formatTime = (seconds) => {
-  const mm = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const ss = (seconds % 60)
-    .toString()
-    .padStart(2, '0');
+const menuImage = ref(null);
+const containerRef = ref(null);
+
+// Timer style (position + size) dynamically updated
+const timerStyle = ref({});
+
+// Replace with your actual original image dimensions
+// so that scale calculations are correct.
+const ORIGINAL_IMAGE_WIDTH = 709; 
+const ORIGINAL_IMAGE_HEIGHT = 1323;
+
+// The timer's original position/size *within* that image.
+// For example, from (145, 95) to (560, 278) in your design.
+const ORIGINAL_TIMER_LEFT = 145;
+const ORIGINAL_TIMER_TOP = 95;
+const ORIGINAL_TIMER_WIDTH = 560 - 145;  // 415
+const ORIGINAL_TIMER_HEIGHT = 278 - 95;  // 183
+
+function formatTime(seconds) {
+  const mm = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const ss = (seconds % 60).toString().padStart(2, '0');
   return `${mm}:${ss}`;
-};
-
-function onPlayPause() {
-  if (gameState.timerRunning) {
-    // Pause
-    stopTimer();
-  } else {
-    // Start
-    startTimer();
-  }
 }
 
-function onPenalty() {
-  if (gameState.timeLeft > gameState.penalty) {
-    gameState.timeLeft -= gameState.penalty;
-  } else {
-    gameState.timeLeft = 0;
-  }
+// Recalculate the timer's position/size based on how the image is actually displayed
+function recalcTimerPosition() {
+  if (!menuImage.value || !containerRef.value) return;
+
+  // bounding box of the container
+  const containerRect = containerRef.value.getBoundingClientRect();
+  // bounding box of the actual rendered image
+  const imgRect = menuImage.value.getBoundingClientRect();
+
+  // The actual displayed size of the image (no cropping because of object-fit: contain)
+  const displayedWidth = imgRect.width;
+  const displayedHeight = imgRect.height;
+
+  // The offset of the image relative to the container (i.e., letterbox space)
+  const offsetX = imgRect.left - containerRect.left;
+  const offsetY = imgRect.top - containerRect.top;
+
+  // Scale factors from original design → actual displayed
+  const scaleX = displayedWidth / ORIGINAL_IMAGE_WIDTH;
+  const scaleY = displayedHeight / ORIGINAL_IMAGE_HEIGHT;
+
+  // Scaled positions
+  const scaledLeft = ORIGINAL_TIMER_LEFT * scaleX;
+  const scaledTop = ORIGINAL_TIMER_TOP * scaleY;
+  const scaledWidth = ORIGINAL_TIMER_WIDTH * scaleX;
+  const scaledHeight = ORIGINAL_TIMER_HEIGHT * scaleY;
+
+  // Combine with offset so timer is pinned to actual image, ignoring letterbox space
+  timerStyle.value = {
+    position: 'absolute',
+    left: `${offsetX + scaledLeft}px`,
+    top: `${offsetY + scaledTop}px`,
+    width: `${scaledWidth}px`,
+    height: `${scaledHeight}px`,
+    // styling extras:
+    background: 'rgba(0,0,0,0.5)',
+    color: '#fff',
+    display: 'flex',
+    'justify-content': 'center',
+    'align-items': 'center',
+    'border-radius': '8px',
+    'z-index': '10',
+  };
 }
 
-function openIndices() {
-  // Show numeric keypad or perform desired action
-  gameState.showNumericPad = true;
-  gameState.numericPadContext = 'indices';
-}
-
-/**
- * Timer functionality
- */
-let timerInterval = null;
-
-function startTimer() {
-  gameState.timerRunning = true;
-  timerInterval = setInterval(() => {
-    if (gameState.timeLeft > 0) {
-      gameState.timeLeft--;
-    } else {
-      clearInterval(timerInterval);
-      gameState.timerRunning = false;
-    }
-  }, 1000);
-
-  // Start music, if any
-  // ...
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-  gameState.timerRunning = false;
-
-  // Pause music, if any
-  // ...
+function onImageLoad() {
+  // Make the image-map responsive
+  imageMapResize();
+  // Recalculate position once the image has an actual size
+  recalcTimerPosition();
 }
 
 onMounted(() => {
-  // Initialize the image map resizer
-  imageMapResize();
+  // Recalc when first mounted
+  nextTick(() => {
+    recalcTimerPosition();
+  });
+
+  // Also recalc on window resize
+  window.addEventListener('resize', recalcTimerPosition);
 });
 </script>
 
 <style scoped>
-.menu-wrapper {
-  /* Remove height: 100vh if it forces leftover space */
-  width: 100vw;
+/* Container occupying the full viewport */
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.menu-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000; /* to visualize letterboxing more clearly */
+}
+
+.img-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
-/* Optional: center it all on the page */
-.outer-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh; /* or some layout of your choosing */
-}
-
-/* Key point: shrink-wrap the image */
-.img-container {
-  position: relative;
-  display: inline-block; /* or block, but let it size to the image */
-}
-
-/* Let the image define its own width/height */
+/* The image uses object-fit: contain to avoid cropping */
 .img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%; /* if you want it to be responsive but not forced to 100% height */
 }
 
-/* Timer absolutely positioned relative to .img-container */
+/* Timer is absolutely positioned. 
+   The final position and size come from :style="timerStyle". */
 .timer {
-  position: absolute;
-  /* Example: top and left in px based on original design, 
-     or in % if you know the image’s aspect ratio. */
-  left: 20.43%;
-  top: 7.18%;
-  width: 58.53%;
-  height: 13.84%;
-  /* styling... */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  z-index: 10;
+  pointer-events: none; /* so it doesn't block clicks on map areas */
+  text-align: center;
+  font-size: 1.2rem;
 }
 </style>
