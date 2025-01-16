@@ -24,7 +24,6 @@
   
       <!-- If you still want clickable areas in the image map -->
       <map name="menuMap">
-        <!-- Example area for “Indices” -->
         <area 
           shape="rect"
           coords="1,571,204,775"
@@ -32,14 +31,54 @@
           href="#"
           @click.prevent="openIndices"
         />
-        <!-- Add more areas as needed -->
+        <area 
+          shape="rect"
+          coords="230,358,471,577"
+          alt="Play"
+          href="#"
+          @click.prevent="onPlayPause"
+        />
+
+        <area 
+          shape="rect"
+          coords="230,642,471,858"
+          alt="Penalty"
+          href="#"
+          @click.prevent="onPenalty"
+        />
+
+        <area 
+          shape="rect"
+          coords="510,570,695,785"
+          alt="Code TODO"
+          href="#"
+          @click.prevent="onPenalty"
+        />
+
+        <area 
+          shape="rect"
+          coords="40,875,280,1095"
+          alt="Object TODO"
+          href="#"
+          @click.prevent="onPenalty"
+        />
+
+        <area 
+          shape="rect"
+          coords="438,875,678,1095"
+          alt="Machine TODO"
+          href="#"
+          @click.prevent="onPenalty"
+        />
+
       </map>
     </div>
   </template>
   
-  <script setup>
-  import { computed } from 'vue';
-  import { gameState } from '../store/gameStore.js';
+<script setup>
+import { onMounted, ref } from 'vue';
+import { gameState } from '../store/gameStore.js';
+import imageMapResize from 'image-map-resizer'; // Import the library
   
   /**
    * Format time from seconds to "mm:ss"
@@ -106,6 +145,11 @@
     // Pause music, if any
     // ...
   }
+
+  onMounted(() => {
+    // Initialize the image map resizer
+    imageMapResize();
+  });
   </script>
   
   <style scoped>
