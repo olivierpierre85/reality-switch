@@ -1,18 +1,21 @@
-<!-- src/components/MenuPage.vue -->
 <template>
-    <div>
-      <img
-        src="/images/menu.png"
-        alt="Menu"
-        usemap="#menuMap"
-        style="max-width: 100%; height: auto;"
-      />
+    <div class="menu-wrapper">
+      <div class="img-container">
+        <!-- The image map can still work, but remember the coords must match the scaled size. -->
+        <img 
+          src="/images/menu.png" 
+          usemap="#menuMap" 
+          alt="Menu"
+        />
+      </div>
   
-      <!-- Here is your image map definition -->
+      <!-- Overlays: This could be extra info or absolute-positioned buttons. -->
+      <!-- Example “Exit” button in top-right corner: -->
+      <button class="exit-button" @click="onExit">Exit</button>
+  
       <map name="menuMap">
-        <!-- Example “Play/Pause” zone -->
-        <area
-          shape="rect"
+        <area 
+          shape="rect" 
           coords="50,50,150,150"
           alt="PlayPause"
           @click="onPlayPause"
@@ -59,4 +62,51 @@
     },
   };
   </script>
+  
+  <style scoped>
+  /* Make body & html fill the screen without scrollbars */
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* no scrollbars */
+  }
+  
+  /* Wrapper for the entire menu page */
+  .menu-wrapper {
+    width: 100vw;
+    height: 100vh;
+    position: relative; /* So we can absolutely-position overlays within */
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Flex container for centering the image */
+  .img-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;  /* center horizontally */
+    align-items: center;      /* center vertically */
+    overflow: hidden;         /* no scrollbars */
+  }
+  
+  /* The image scales while maintaining aspect ratio */
+  .img-container img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    /* No forced width or height, so it "contains" the image within the screen */
+  }
+  
+  /* Example of a button over the image in the top-right corner */
+  .exit-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 999;   /* ensure above the image */
+    /* your styling here */
+  }
+  </style>
   
