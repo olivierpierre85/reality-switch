@@ -180,17 +180,18 @@ onMounted(() => {
   position: absolute;
   /* Example: top and left in px based on original design, 
      or in % if you know the image’s aspect ratio. */
-  left: 20.43%;
-  top: 7.18%;
-  width: 58.53%;
-  height: 13.84%;
+  left: 21%;
+  top: 7.5%;
+  width: 58%;
+  height: 13%;
   /* styling... */
   display: flex;
   justify-content: center;
   align-items: center;
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 1);
   border-radius: 8px;
   z-index: 10;
+  font-size: xxx-large;
 }
 </style>
