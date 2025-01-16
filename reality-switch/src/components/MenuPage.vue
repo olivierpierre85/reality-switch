@@ -25,11 +25,12 @@
       <!-- If you still want clickable areas in the image map -->
       <map name="menuMap">
         <!-- Example area for “Indices” -->
-        <area
+        <area 
           shape="rect"
-          coords="50,50,150,150"
+          coords="1,571,204,775"
           alt="Indices"
-          @click="openIndices"
+          href="#"
+          @click.prevent="openIndices"
         />
         <!-- Add more areas as needed -->
       </map>
