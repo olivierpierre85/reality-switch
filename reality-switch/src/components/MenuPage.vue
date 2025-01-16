@@ -1,16 +1,16 @@
 <template>
   <div class="menu-wrapper">
-    <!-- The image container -->
-    <div class="img-container">
-      <img
-        src="/images/menu.png"
-        alt="Menu"
-        usemap="#menuMap"
-      />
-      
-      <!-- Timer positioned over the image -->
-      <div class="timer">
-        {{ formatTime(gameState.timeLeft) }}
+    <!-- If you still want to center the entire image+timer on the page: -->
+    <div class="outer-center">
+      <div class="img-container">
+        <img
+          src="/images/menu.png"
+          alt="Menu"
+          usemap="#menuMap"
+        />
+        <div class="timer">
+          {{ formatTime(gameState.timeLeft) }}
+        </div>
       </div>
     </div>
 
@@ -65,6 +65,7 @@
     </map>
   </div>
 </template>
+
 
 <script setup>
 import { onMounted, ref } from 'vue';
@@ -143,54 +144,52 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Ensure the page itself has no scrollbars */
-html, body {
+.menu-wrapper {
+  /* Remove height: 100vh if it forces leftover space */
+  width: 100vw;
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
   overflow: hidden;
 }
 
-/* Wrapper that takes full screen */
-.menu-wrapper {
-  width: 100vw;
-  height: 100vh;
-  position: relative; /* To absolutely position .timer */
-}
-
-/* Center the image, no scroll, maintain aspect ratio */
-.img-container {
-  width: 100%;
-  height: 100%;
+/* Optional: center it all on the page */
+.outer-center {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
-  position: relative; /* To contain the absolute .timer */
+  min-height: 100vh; /* or some layout of your choosing */
 }
 
+/* Key point: shrink-wrap the image */
+.img-container {
+  position: relative;
+  display: inline-block; /* or block, but let it size to the image */
+}
+
+/* Let the image define its own width/height */
 .img-container img {
-  max-width: 100%;
-  max-height: 100%;
   display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%; /* if you want it to be responsive but not forced to 100% height */
 }
 
-/* Timer positioned over the image */
+/* Timer absolutely positioned relative to .img-container */
 .timer {
   position: absolute;
-  left: 20.43%;   /* 145 / 709 */
-  top: 7.18%;     /* 95 / 1323 */
-  width: 58.53%;  /* (560 - 145) / 709 */
-  height: 13.84%; /* (278 - 95) / 1323 */
+  /* Example: top and left in px based on original design, 
+     or in % if you know the image’s aspect ratio. */
+  left: 20.43%;
+  top: 7.18%;
+  width: 58.53%;
+  height: 13.84%;
+  /* styling... */
   display: flex;
   justify-content: center;
   align-items: center;
   color: #fff;
-  font-size: 1.2rem;
-  background: rgba(0, 0, 0, 0.5); /* Optional: semi-transparent background */
-  border-radius: 8px; /* Optional: rounded corners */
-  z-index: 10; /* Ensure it's above the image */
-  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  z-index: 10;
 }
 </style>
