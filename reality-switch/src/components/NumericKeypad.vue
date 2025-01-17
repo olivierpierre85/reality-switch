@@ -36,36 +36,50 @@
   // Example of the "Indices" table from your doc, as an object
   // cardNumber => [indice1.jpg, indice2.jpg, reponse.jpg]
   const INDICES_TABLE = {
-    7:  ['3.jpg', '4.jpg', '5.jpg'],
-    8:  ['3.jpg', '4.jpg', '6.jpg'],
-    9:  ['3.jpg', '4.jpg', '6.jpg'],
-    10: ['7.jpg', '8.jpg', '9.jpg'],
-    11: ['7.jpg', '8.jpg', '10.jpg'],
-    12: ['7.jpg', '8.jpg', '9.jpg'],
-    14: ['11.jpg','12.jpg','13.jpg'],
-    // ...
+    7:  ['3.png', '4.png', '5.png'],
+    8:  ['3.png', '4.png', '6.png'],
+    9:  ['3.png', '4.png', '6.png'],
+    10: ['7.png', '8.png', '9.png'],
+    11: ['7.png', '8.png', '10.png'],
+    12: ['7.png', '8.png', '9.png'],
+    14: ['11.png', '12.png', '13.png'],
+    54: ['14.png', '15.png', '16.png'],
+    73: ['11.png', '12.png', '17.png'],
+    26: ['18.png', '19.png', '20.png'],
+    30: ['21.png', '22.png', '23.png'],
+    36: ['24.png', '25.png', '26.png'],
+    57: ['27.png', '28.png', '29.png'],
+    67: ['27.png', '28.png', '31.png'],
+    77: ['27.png', '28.png', '32.png'],
+    87: ['27.png', '28.png', '30.png'],
+    43: ['33.png', '34.png', '35.png'],
+    44: ['33.png', '34.png', '36.png'],
+    45: ['33.png', '34.png', '37.png'],
+    46: ['33.png', '34.png', '38.png'],
+    29: ['39.png', '40.png', '41.png'],
+    3:  ['42.png', '43.png', '44.png'],
   };
   
   // For all others (not in table), we display 66.jpg
   
   // Example of the “Objets cachés” table
-  // cardNumber => [indice.jpg, reponse.jpg]
+  // cardNumber => [indice.png, reponse.png]
   const OBJETS_TABLE = {
-    5:  ['55.jpg', '56.jpg'],
-    27: ['57.jpg', '58.jpg'],
-    16: ['59.jpg', '60.jpg'],
-    15: ['61.jpg', '62.jpg'],
-    99: ['63.jpg', '64.jpg'],
+    5:  ['55.png', '56.png'],
+    27: ['57.png', '58.png'],
+    16: ['59.png', '60.png'],
+    15: ['61.png', '62.png'],
+    99: ['63.png', '64.png'],
   };
   
   // Example of “Codes” table
-  // cardNumber => { code: 'xxxx', newCard: 'xx.jpg' }
+  // cardNumber => { code: 'xxxx', newCard: 'xx.png' }
   const CODES_TABLE = {
-    14: { code: '7248', newCard: '49.jpg' },
-    73: { code: '3865', newCard: '50.jpg' },
-    26: { code: '1945', newCard: '51.jpg' },
-    29: { code: '1946', newCard: '52.jpg' },
-    3:  { code: '9698', newCard: '53.jpg' },
+    14: { code: '7248', newCard: '49.png' },
+    73: { code: '3865', newCard: '50.png' },
+    26: { code: '1945', newCard: '51.png' },
+    29: { code: '1946', newCard: '52.png' },
+    3:  { code: '9698', newCard: '53.png' },
   };
   
   export default {

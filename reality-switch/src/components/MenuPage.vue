@@ -42,17 +42,17 @@
       <area 
         shape="rect"
         coords="510,570,695,785"
-        alt="Code TODO"
+        alt="Codes"
         href="#"
-        @click.prevent="onPenalty"
+        @click.prevent="openCodes"
       />
 
       <area 
         shape="rect"
         coords="40,875,280,1095"
-        alt="Object TODO"
+        alt="Objects"
         href="#"
-        @click.prevent="onPenalty"
+        @click.prevent="openObjects"
       />
 
       <area 
@@ -107,6 +107,18 @@ function openIndices() {
   // Show numeric keypad or perform desired action
   gameState.showNumericPad = true;
   gameState.numericPadContext = 'indices';
+}
+
+function openObjects() {
+  // Show numeric keypad or perform desired action
+  gameState.showNumericPad = true;
+  gameState.numericPadContext = 'objets';
+}
+
+function openCodes() {
+  // Show numeric keypad or perform desired action
+  gameState.showNumericPad = true;
+  gameState.numericPadContext = 'codes';
 }
 
 /**
