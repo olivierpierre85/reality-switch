@@ -240,6 +240,8 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Comic+Sans+MS&display=swap');
+
 .overlay {
   position: fixed;
   top: 0;
@@ -253,35 +255,105 @@ export default {
   z-index: 9999; /* Ensure it's on top */
 }
 
+/* Modal Styles for Steps 1 & 2 */
 .modal {
-  background-color: #fff;
-  padding: 1rem;
+  background-color: #0a425e;
+  padding: 2rem;
   position: relative;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Result Container Styles for Step 3 */
+.result-container {
+  background-color: #0a425e;
+  padding: 0; /* Remove padding */
+  margin: 0;  /* Remove margin */
+  position: relative;
+  border-radius: 0; /* Remove border-radius if not needed */
+  width: auto; /* Let the image define the width */
+  max-width: none; /* Remove max-width constraint */
+  box-shadow: none; /* Remove box-shadow for a cleaner look */
+  display: flex;
+  justify-content: center; /* Center the image horizontally */
+  align-items: center;     /* Center the image vertically if needed */
+}
+
+/* Common Text Styles */
+h2 {
+  text-align: center;
+  color: #ffffff;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+p {
+  text-align: center;
+  color: #ffffff;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  margin-bottom: 1rem;
+}
+
+/* Input Styles */
+input {
+  display: block;
+  width: 80%;
+  margin: 0.5rem auto 1.5rem auto;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* Button Styles */
+button {
+  display: block;
+  margin: 0.5rem auto;
+  padding: 0.5rem 1rem;
+  background-color: #ffffff;
+  color: #0a425e;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Close Button Styles */
 .close-btn {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-/* Step 3 container: same style approach as .menu-wrapper */
-.result-container {
-  background-color: #fff;
-  padding: 0.5rem;
-  position: relative;
-}
-
+/* Image Container Styles */
 .img-container {
-  position: relative;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 .img-container img {
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
-  max-width: 90vw; /* or 100% */
-  max-height: 90vh;
+  max-width: 100%; /* Allow image to scale responsively */
+  max-height: 100vh; /* Prevent image from exceeding viewport height */
 }
 </style>
