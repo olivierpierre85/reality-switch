@@ -1,3 +1,4 @@
+<!-- src/components/NumericKeypad.vue -->
 <template>
   <div class="overlay">
     <!-- Step 1 & 2: Input Modal -->
@@ -46,57 +47,55 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { gameState } from '../store/gameStore.js';
 import imageMapResize from 'image-map-resizer';
 
-// Example tables
+// Define your tables here or import them if they are defined elsewhere
 const INDICES_TABLE = {
-    7:  ['3.png', '4.png', '5.png'],
-    8:  ['3.png', '4.png', '6.png'],
-    9:  ['3.png', '4.png', '6.png'],
-    10: ['7.png', '8.png', '9.png'],
-    11: ['7.png', '8.png', '10.png'],
-    12: ['7.png', '8.png', '9.png'],
-    14: ['11.png', '12.png', '13.png'],
-    54: ['14.png', '15.png', '16.png'],
-    73: ['11.png', '12.png', '17.png'],
-    26: ['18.png', '19.png', '20.png'],
-    30: ['21.png', '22.png', '23.png'],
-    36: ['24.png', '25.png', '26.png'],
-    57: ['27.png', '28.png', '29.png'],
-    67: ['27.png', '28.png', '31.png'],
-    77: ['27.png', '28.png', '32.png'],
-    87: ['27.png', '28.png', '30.png'],
-    43: ['33.png', '34.png', '35.png'],
-    44: ['33.png', '34.png', '36.png'],
-    45: ['33.png', '34.png', '37.png'],
-    46: ['33.png', '34.png', '38.png'],
-    29: ['39.png', '40.png', '41.png'],
-    3:  ['42.png', '43.png', '44.png'],
-  };
+  7:  ['3.png', '4.png', '5.png'],
+  8:  ['3.png', '4.png', '6.png'],
+  9:  ['3.png', '4.png', '6.png'],
+  10: ['7.png', '8.png', '9.png'],
+  11: ['7.png', '8.png', '10.png'],
+  12: ['7.png', '8.png', '9.png'],
+  14: ['11.png', '12.png', '13.png'],
+  54: ['14.png', '15.png', '16.png'],
+  73: ['11.png', '12.png', '17.png'],
+  26: ['18.png', '19.png', '20.png'],
+  30: ['21.png', '22.png', '23.png'],
+  36: ['24.png', '25.png', '26.png'],
+  57: ['27.png', '28.png', '29.png'],
+  67: ['27.png', '28.png', '31.png'],
+  77: ['27.png', '28.png', '32.png'],
+  87: ['27.png', '28.png', '30.png'],
+  43: ['33.png', '34.png', '35.png'],
+  44: ['33.png', '34.png', '36.png'],
+  45: ['33.png', '34.png', '37.png'],
+  46: ['33.png', '34.png', '38.png'],
+  29: ['39.png', '40.png', '41.png'],
+  3:  ['42.png', '43.png', '44.png'],
+};
 
-  // For all others (not in table), we display 66.jpg
-  
-  // Example of the “Objets cachés” table
-  // cardNumber => [indice.png, reponse.png]
-  const OBJETS_TABLE = {
-    5:  ['55.png', '56.png'],
-    27: ['57.png', '58.png'],
-    16: ['59.png', '60.png'],
-    15: ['61.png', '62.png'],
-    99: ['63.png', '64.png'],
-  };
-  
-  // Example of “Codes” table
-  // cardNumber => { code: 'xxxx', newCard: 'xx.png' }
-  const CODES_TABLE = {
-    14: { code: '7248', newCard: '49.png' },
-    73: { code: '3865', newCard: '50.png' },
-    26: { code: '1945', newCard: '51.png' },
-    29: { code: '1946', newCard: '52.png' },
-    3:  { code: '9698', newCard: '53.png' },
-  };
+// For all others (not in table), we display 66.png
+
+// Example of the “Objets cachés” table
+const OBJETS_TABLE = {
+  5:  ['55.png', '56.png'],
+  27: ['57.png', '58.png'],
+  16: ['59.png', '60.png'],
+  15: ['61.png', '62.png'],
+  99: ['63.png', '64.png'],
+};
+
+// Example of “Codes” table
+const CODES_TABLE = {
+  14: { code: '7248', newCard: '49.png' },
+  73: { code: '3865', newCard: '50.png' },
+  26: { code: '1945', newCard: '51.png' },
+  29: { code: '1946', newCard: '52.png' },
+  3:  { code: '9698', newCard: '53.png' },
+};
 
 export default {
   name: 'NumericKeypad',
@@ -107,23 +106,13 @@ export default {
     const userCode = ref('');
     const resultImage = ref('');
 
-    // Define natural dimensions of your result images
-    // Replace these with actual dimensions of your result images
-    const IMAGE_DIMENSIONS = {
-      '66.jpg': { width: 800, height: 600 },
-      '54.jpg': { width: 800, height: 600 },
-      '48.jpg': { width: 800, height: 600 },
-      // Add other result images as needed
-      // 'newCardImage.jpg': { width: xxx, height: yyy },
-    };
-
     // Define exit area coordinates based on the natural image size
     const exitAreaCoordsMap = {
-      '66.jpg': '558,37,674,155',
-      '54.jpg': '558,37,674,155',
-      '48.jpg': '558,37,674,155',
+      '66.png': '558,37,674,155',
+      '54.png': '558,37,674,155',
+      '48.png': '558,37,674,155',
       // Add other images if their exit button positions differ
-      // 'newCardImage.jpg': 'x1,y1,x2,y2',
+      // 'newCardImage.png': 'x1,y1,x2,y2',
     };
 
     const exitAreaCoords = computed(() => {
@@ -143,23 +132,44 @@ export default {
       const num = parseInt(cardNumber.value, 10);
       if (!num) return;
 
+      // **New:** Reset objet index if a different card is selected
+      if (gameState.lastEnteredCardNumber !== num && props.context === 'objets') {
+        gameState.currentObjetIndex[num] = 0;
+      }
+
       gameState.lastEnteredCardNumber = num;
 
       if (props.context === 'indices') {
-        if (INDICES_TABLE[num]) {
-          resultImage.value = INDICES_TABLE[num][0]; // first image
+        if (INDICES_TABLE[num] && INDICES_TABLE[num].length > 0) {
+          // Get current indice index, default to 0
+          const currentIndex = gameState.currentIndiceIndex[num] || 0;
+
+          // Set resultImage
+          resultImage.value = INDICES_TABLE[num][currentIndex];
+
+          // Update the currentIndiceIndex for next time
+          gameState.currentIndiceIndex[num] = (currentIndex + 1) % INDICES_TABLE[num].length;
         } else {
-          resultImage.value = '66.jpg'; // fallback
+          // fallback
+          resultImage.value = '66.png';
         }
         step.value = 3; // show result
       }
       else if (props.context === 'objets') {
-        if (OBJETS_TABLE[num]) {
-          resultImage.value = OBJETS_TABLE[num][0];
+        if (OBJETS_TABLE[num] && OBJETS_TABLE[num].length > 0) {
+          // Get current objet index, default to 0
+          const currentIndex = gameState.currentObjetIndex[num] || 0;
+
+          // Set resultImage
+          resultImage.value = OBJETS_TABLE[num][currentIndex];
+
+          // Update the currentObjetIndex for next time
+          gameState.currentObjetIndex[num] = (currentIndex + 1) % OBJETS_TABLE[num].length;
         } else {
-          resultImage.value = '54.jpg';
+          // fallback
+          resultImage.value = '54.png';
         }
-        step.value = 3;
+        step.value = 3; // show result
       }
       else if (props.context === 'codes') {
         // Go to step 2
@@ -172,7 +182,7 @@ export default {
       const entry = CODES_TABLE[num];
       if (!entry) {
         // wrong
-        resultImage.value = '48.jpg';
+        resultImage.value = '48.png';
         step.value = 3;
         return;
       }
@@ -183,7 +193,7 @@ export default {
         step.value = 3;
       } else {
         // wrong
-        resultImage.value = '48.jpg';
+        resultImage.value = '48.png';
         step.value = 3;
       }
     }
