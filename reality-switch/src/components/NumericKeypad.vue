@@ -1,41 +1,57 @@
-<!-- src/components/NumericKeypad.vue -->
 <template>
-    <div class="overlay">
-      <div class="modal">
-        <h2>{{ title }}</h2>
-  
-        <!-- If context is 'indices' or 'objets' or 'codes' -->
-        <div v-if="step === 1">
-          <p>Entrez le N° de carte :</p>
-          <input v-model="cardNumber" type="number" />
-          <button @click="validateCardNumber">Valider</button>
-        </div>
-  
-        <div v-else-if="step === 2 && context === 'codes'">
-          <p>Entrez le code à 4 chiffres :</p>
-          <input v-model="userCode" type="password" maxlength="4" />
-          <button @click="validate4DigitsCode">Valider</button>
-        </div>
-  
-        <!-- Show the result (image) if needed -->
-        <div v-else-if="step === 3">
-          <p>Résultat :</p>
-          <img :src="`/images/${resultImage}`" alt="Result" />
-          <button @click="close">OK</button>
-        </div>
-  
-        <button class="close-btn" @click="$emit('close')">X</button>
+  <div class="overlay">
+    <!-- Step 1 & 2: Input Modal -->
+    <div class="modal" v-if="step < 3">
+      <h2>{{ title }}</h2>
+      
+      <!-- Step 1: Enter Card Number -->
+      <div v-if="step === 1">
+        <p>Entrez le N° de carte :</p>
+        <input v-model="cardNumber" type="number" />
+        <button @click="validateCardNumber">Valider</button>
       </div>
+
+      <!-- Step 2: Enter 4-Digit Code (Only for 'codes' context) -->
+      <div v-else-if="step === 2 && context === 'codes'">
+        <p>Entrez le code à 4 chiffres :</p>
+        <input v-model="userCode" type="password" maxlength="4" />
+        <button @click="validate4DigitsCode">Valider</button>
+      </div>
+
+      <button class="close-btn" @click="close">X</button>
     </div>
-  </template>
-  
-  <script>
-  import { ref, computed } from 'vue';
-  import { gameState } from '../store/gameStore.js';
-  
-  // Example of the "Indices" table from your doc, as an object
-  // cardNumber => [indice1.jpg, indice2.jpg, reponse.jpg]
-  const INDICES_TABLE = {
+
+    <!-- Step 3: Result Image with Exit Area -->
+    <div class="result-container" v-else>
+      <div class="img-container">
+        <img
+          :src="`/images/${resultImage}`"
+          alt="Result"
+          usemap="#resultMap"
+          @load="onResultImageLoad"
+        />
+      </div>
+      <map name="resultMap">
+        <!-- Exit Button Area -->
+        <area
+          shape="rect"
+          :coords="exitAreaCoords"
+          alt="Exit"
+          href="#"
+          @click.prevent="goBackToMenu"
+        />
+      </map>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, computed, onMounted, watch } from 'vue';
+import { gameState } from '../store/gameStore.js';
+import imageMapResize from 'image-map-resizer';
+
+// Example tables
+const INDICES_TABLE = {
     7:  ['3.png', '4.png', '5.png'],
     8:  ['3.png', '4.png', '6.png'],
     9:  ['3.png', '4.png', '6.png'],
@@ -59,7 +75,7 @@
     29: ['39.png', '40.png', '41.png'],
     3:  ['42.png', '43.png', '44.png'],
   };
-  
+
   // For all others (not in table), we display 66.jpg
   
   // Example of the “Objets cachés” table
@@ -81,133 +97,181 @@
     29: { code: '1946', newCard: '52.png' },
     3:  { code: '9698', newCard: '53.png' },
   };
-  
-  export default {
-    name: 'NumericKeypad',
-    props: ['context'],
-    setup(props, { emit }) {
-      const step = ref(1);
-      const cardNumber = ref('');
-      const userCode = ref('');
-      const resultImage = ref('');
-  
-      const title = computed(() => {
-        switch (props.context) {
-          case 'indices': return 'Indices';
-          case 'objets':  return 'Objets cachés';
-          case 'codes':   return 'Code';
-          default:        return 'Clavier numérique';
-        }
-      });
-  
-      function validateCardNumber() {
-        const num = parseInt(cardNumber.value);
-        if (!num) return;
-  
-        // Store last entered card number in global store
-        gameState.lastEnteredCardNumber = num;
-  
-        if (props.context === 'indices') {
-          // 1) Check if cardNumber in INDICES_TABLE
-          if (INDICES_TABLE[num]) {
-            // Step 1 => Indice1
-            resultImage.value = INDICES_TABLE[num][0];
-            step.value = 3; // show result
-          } else {
-            // not found => show 66.jpg
-            resultImage.value = '66.jpg';
-            step.value = 3;
-          }
-        }
-        else if (props.context === 'objets') {
-          // For objets, we show directly the "indice" => step 3
-          if (OBJETS_TABLE[num]) {
-            resultImage.value = OBJETS_TABLE[num][0];
-            step.value = 3;
-          } else {
-            // or a default?
-            // The doc says: “Lorsqu’un indice (pour objet caché) est demandé → 54.jpg”
-            // But that might be specifically for the “Indice” button, so adapt as needed.
-            resultImage.value = '54.jpg';
-            step.value = 3;
-          }
-        }
-        else if (props.context === 'codes') {
-          // For codes, we go to step 2 for 4-digit code
-          step.value = 2;
-        }
+
+export default {
+  name: 'NumericKeypad',
+  props: ['context'],
+  setup(props, { emit }) {
+    const step = ref(1);
+    const cardNumber = ref('');
+    const userCode = ref('');
+    const resultImage = ref('');
+
+    // Define natural dimensions of your result images
+    // Replace these with actual dimensions of your result images
+    const IMAGE_DIMENSIONS = {
+      '66.jpg': { width: 800, height: 600 },
+      '54.jpg': { width: 800, height: 600 },
+      '48.jpg': { width: 800, height: 600 },
+      // Add other result images as needed
+      // 'newCardImage.jpg': { width: xxx, height: yyy },
+    };
+
+    // Define exit area coordinates based on the natural image size
+    const exitAreaCoordsMap = {
+      '66.jpg': '558,37,674,155',
+      '54.jpg': '558,37,674,155',
+      '48.jpg': '558,37,674,155',
+      // Add other images if their exit button positions differ
+      // 'newCardImage.jpg': 'x1,y1,x2,y2',
+    };
+
+    const exitAreaCoords = computed(() => {
+      return exitAreaCoordsMap[resultImage.value] || '558,37,674,155'; // default coords
+    });
+
+    const title = computed(() => {
+      switch (props.context) {
+        case 'indices': return 'Indices';
+        case 'objets':  return 'Objets cachés';
+        case 'codes':   return 'Code';
+        default:        return 'Clavier numérique';
       }
-  
-      function validate4DigitsCode() {
-        const num = gameState.lastEnteredCardNumber;
-        const entry = CODES_TABLE[num];
-        if (!entry) {
-          // If there's no such card in the table => it’s automatically wrong
-          resultImage.value = '48.jpg';
-          // Play "faux.wav" (you can do it from here or a separate function)
-          step.value = 3;
-          return;
-        }
-  
-        if (userCode.value === entry.code) {
-          // Good code => new card
-          resultImage.value = entry.newCard;
-          // Trigger “vrai.wav” & special music if needed
-          // Also check if it’s card 26 or 29 => play time machine + different music
-          if (num === 26) {
-            // play "machine temporelle.wav", then "musique2 - 1946.wav"
-          } else if (num === 29) {
-            // play "machine temporelle.wav", then "musique3 - Marshall.wav"
-          }
-          step.value = 3;
+    });
+
+    function validateCardNumber() {
+      const num = parseInt(cardNumber.value, 10);
+      if (!num) return;
+
+      gameState.lastEnteredCardNumber = num;
+
+      if (props.context === 'indices') {
+        if (INDICES_TABLE[num]) {
+          resultImage.value = INDICES_TABLE[num][0]; // first image
         } else {
-          // Wrong code => 48.jpg
-          resultImage.value = '48.jpg';
-          // play "faux.wav"
-          step.value = 3;
+          resultImage.value = '66.jpg'; // fallback
         }
+        step.value = 3; // show result
       }
-  
-      function close() {
-        emit('close');
-        step.value = 1;
-        cardNumber.value = '';
-        userCode.value = '';
-        resultImage.value = '';
+      else if (props.context === 'objets') {
+        if (OBJETS_TABLE[num]) {
+          resultImage.value = OBJETS_TABLE[num][0];
+        } else {
+          resultImage.value = '54.jpg';
+        }
+        step.value = 3;
       }
-  
-      return {
-        step, cardNumber, userCode, resultImage,
-        title,
-        validateCardNumber,
-        validate4DigitsCode,
-        close,
-      };
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .modal {
-    background-color: #fff;
-    padding: 1rem;
-    position: relative;
-  }
-  .close-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-  </style>
-  
+      else if (props.context === 'codes') {
+        // Go to step 2
+        step.value = 2;
+      }
+    }
+
+    function validate4DigitsCode() {
+      const num = gameState.lastEnteredCardNumber;
+      const entry = CODES_TABLE[num];
+      if (!entry) {
+        // wrong
+        resultImage.value = '48.jpg';
+        step.value = 3;
+        return;
+      }
+      if (userCode.value === entry.code) {
+        // correct
+        resultImage.value = entry.newCard;
+        // Possibly play sounds
+        step.value = 3;
+      } else {
+        // wrong
+        resultImage.value = '48.jpg';
+        step.value = 3;
+      }
+    }
+
+    function close() {
+      emit('close');
+      step.value = 1;
+      cardNumber.value = '';
+      userCode.value = '';
+      resultImage.value = '';
+    }
+
+    function goBackToMenu() {
+      close(); // close the keypad
+      // Set page to 'menu'
+      gameState.currentPage = 'menu';
+    }
+
+    function onResultImageLoad() {
+      // Initialize or re-initialize imageMapResize when a new result image is loaded
+      imageMapResize();
+    }
+
+    onMounted(() => {
+      // Initialize imageMapResize for the initial state if needed
+      imageMapResize();
+    });
+
+    return {
+      step,
+      cardNumber,
+      userCode,
+      resultImage,
+      title,
+      validateCardNumber,
+      validate4DigitsCode,
+      close,
+      goBackToMenu,
+      onResultImageLoad,
+      exitAreaCoords,
+    };
+  },
+};
+</script>
+
+<style scoped>
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure it's on top */
+}
+
+.modal {
+  background-color: #fff;
+  padding: 1rem;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* Step 3 container: same style approach as .menu-wrapper */
+.result-container {
+  background-color: #fff;
+  padding: 0.5rem;
+  position: relative;
+}
+
+.img-container {
+  position: relative;
+  display: inline-block;
+}
+
+.img-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 90vw; /* or 100% */
+  max-height: 90vh;
+}
+</style>

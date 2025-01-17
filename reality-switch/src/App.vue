@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-
     <!-- Page content -->
     <component :is="currentPageComponent" />
 
@@ -10,15 +9,13 @@
       :context="gameState.numericPadContext"
       @close="closeNumericPad"
     />
-
   </div>
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { gameState } from './store/gameStore.js';
 
-// Import your components
 import MenuPage from './components/MenuPage.vue';
 import MachinePage from './components/MachinePage.vue';
 import NumericKeypad from './components/NumericKeypad.vue';
@@ -44,33 +41,40 @@ export default {
       }
     });
 
-    /**
-     * Timer logic
-     */
     let timerInterval = null;
 
+    // Start the timer if `timerRunning` is true (and not already started)
+    function startTimer() {
+      if (timerInterval) return;  // Avoid multiple intervals
+      timerInterval = setInterval(() => {
+        if (gameState.timeLeft > 0) {
+          gameState.timeLeft--;
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          gameState.timerRunning = false;
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    // This toggles the state, and starts/stops the interval
     function toggleTimer() {
       if (gameState.timerRunning) {
-        // Pause
-        clearInterval(timerInterval);
         gameState.timerRunning = false;
-        // Pause the music if you want
+        stopTimer();
+        // Also stop music if you want
         gameState.isMusicPlaying = false;
       } else {
-        // Play
         gameState.timerRunning = true;
-        // Start interval
-        timerInterval = setInterval(() => {
-          if (gameState.timeLeft > 0) {
-            gameState.timeLeft--;
-          } else {
-            // Timer finished
-            clearInterval(timerInterval);
-            gameState.timerRunning = false;
-            // Possibly stop music or do something else
-          }
-        }, 1000);
-        // Start music
+        startTimer();
+        // Also start music if you want
         gameState.isMusicPlaying = true;
       }
     }
@@ -79,16 +83,8 @@ export default {
       if (gameState.timeLeft > gameState.penalty) {
         gameState.timeLeft -= gameState.penalty;
       } else {
-        gameState.timeLeft = 0; // if smaller than penalty
+        gameState.timeLeft = 0;
       }
-    }
-
-    function formatTime(seconds) {
-      const mm = Math.floor(seconds / 60)
-        .toString()
-        .padStart(2, '0');
-      const ss = (seconds % 60).toString().padStart(2, '0');
-      return `${mm}:${ss}`;
     }
 
     function closeNumericPad() {
@@ -96,12 +92,18 @@ export default {
       gameState.numericPadContext = null;
     }
 
+    onMounted(() => {
+      // If the timerRunning was restored as true, start it
+      if (gameState.timerRunning) {
+        startTimer();
+      }
+    });
+
     return {
       gameState,
       currentPageComponent,
       toggleTimer,
       applyPenalty,
-      formatTime,
       closeNumericPad,
     };
   },
@@ -114,10 +116,5 @@ export default {
   height: 100vh;
   overflow: hidden;
   position: relative;
-}
-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
 }
 </style>

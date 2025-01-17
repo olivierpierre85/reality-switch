@@ -1,6 +1,5 @@
 <template>
   <div class="menu-wrapper">
-    <!-- If you still want to center the entire image+timer on the page: -->
     <div class="outer-center">
       <div class="img-container">
         <img
@@ -8,54 +7,66 @@
           alt="Menu"
           usemap="#menuMap"
         />
+        <!-- Show Timer only if we are in 'menu' page (or if you want it globally, that’s up to you) -->
         <div class="timer">
           {{ formatTime(gameState.timeLeft) }}
         </div>
       </div>
     </div>
 
-    <!-- If you still want clickable areas in the image map -->
     <map name="menuMap">
-      <area 
+      <!-- Mute/Unmute -->
+      <area
+        shape="rect"
+        coords="22,26,229,70"
+        alt="Mute/Unmute"
+        href="#"
+        @click.prevent="onMuteUnmute"
+      />
+      <!-- Reset Timer -->
+      <area
+        shape="rect"
+        coords="487,26,694,70"
+        alt="Reset Timer"
+        href="#"
+        @click.prevent="onResetTimer"
+      />
+      <area
         shape="rect"
         coords="1,571,204,775"
         alt="Indices"
         href="#"
         @click.prevent="openIndices"
       />
-      <area 
+      <area
         shape="rect"
         coords="230,358,471,577"
         alt="Play"
         href="#"
         @click.prevent="onPlayPause"
       />
-
-      <area 
+      <area
         shape="rect"
         coords="230,642,471,858"
         alt="Penalty"
         href="#"
         @click.prevent="onPenalty"
       />
-
-      <area 
+      <area
         shape="rect"
         coords="510,570,695,785"
         alt="Codes"
         href="#"
         @click.prevent="openCodes"
       />
-
-      <area 
+      <area
         shape="rect"
         coords="40,875,280,1095"
         alt="Objects"
         href="#"
         @click.prevent="openObjects"
       />
-
-      <area 
+      <area
         shape="rect"
         coords="438,875,678,1095"
         alt="Machine TODO"
@@ -66,15 +77,12 @@
   </div>
 </template>
 
-
 <script setup>
 import { onMounted, ref } from 'vue';
 import { gameState } from '../store/gameStore.js';
-import imageMapResize from 'image-map-resizer'; // Import the library
+import imageMapResize from 'image-map-resizer';
 
-/**
- * Format time from seconds to "mm:ss"
- */
+// Format time
 const formatTime = (seconds) => {
   const mm = Math.floor(seconds / 60)
     .toString()
@@ -85,12 +93,22 @@ const formatTime = (seconds) => {
   return `${mm}:${ss}`;
 };
 
+function onMuteUnmute() {
+  // Toggle muting
+  gameState.isMuted = !gameState.isMuted;
+  // If muting => stop music, etc.
+  // If unmuting => resume music, etc.
+}
+
+function onResetTimer() {
+  // Example: reset to 3600 seconds
+  gameState.timeLeft = 3600;
+}
+
 function onPlayPause() {
   if (gameState.timerRunning) {
-    // Pause
     stopTimer();
   } else {
-    // Start
     startTimer();
   }
 }
@@ -104,99 +122,86 @@ function onPenalty() {
 }
 
 function openIndices() {
-  // Show numeric keypad or perform desired action
   gameState.showNumericPad = true;
   gameState.numericPadContext = 'indices';
 }
 
 function openObjects() {
-  // Show numeric keypad or perform desired action
   gameState.showNumericPad = true;
   gameState.numericPadContext = 'objets';
 }
 
 function openCodes() {
-  // Show numeric keypad or perform desired action
   gameState.showNumericPad = true;
   gameState.numericPadContext = 'codes';
 }
 
 /**
- * Timer functionality
+ * Timer
  */
 let timerInterval = null;
 
 function startTimer() {
+  if (timerInterval) return;
   gameState.timerRunning = true;
   timerInterval = setInterval(() => {
     if (gameState.timeLeft > 0) {
       gameState.timeLeft--;
     } else {
       clearInterval(timerInterval);
+      timerInterval = null;
       gameState.timerRunning = false;
     }
   }, 1000);
-
-  // Start music, if any
-  // ...
 }
 
 function stopTimer() {
-  clearInterval(timerInterval);
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
   gameState.timerRunning = false;
-
-  // Pause music, if any
-  // ...
 }
 
 onMounted(() => {
-  // Initialize the image map resizer
   imageMapResize();
+  // If the timer is marked as running in store, ensure we have an interval
+  if (gameState.timerRunning && !timerInterval) {
+    startTimer();
+  }
 });
 </script>
 
 <style scoped>
 .menu-wrapper {
-  /* Remove height: 100vh if it forces leftover space */
   width: 100vw;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* or auto */
+  overflow-x: hidden;
   overflow-y: auto;
 }
-
-/* Optional: center it all on the page */
 .outer-center {
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
-/* Key point: shrink-wrap the image */
 .img-container {
   position: relative;
-  display: inline-block; /* or block, but let it size to the image */
+  display: inline-block;
 }
-
-/* Let the image define its own width/height */
 .img-container img {
   display: block;
   width: auto;
   height: auto;
-  max-width: 100%; /* if you want it to be responsive but not forced to 100% height */
+  max-width: 100%;
   max-height: 100vh;
 }
-
-/* Timer absolutely positioned relative to .img-container */
 .timer {
   position: absolute;
-  /* Example: top and left in px based on original design, 
-     or in % if you know the image’s aspect ratio. */
   left: 21%;
   top: 7.5%;
   width: 58%;
   height: 13%;
-  /* styling... */
   display: flex;
   justify-content: center;
   align-items: center;
