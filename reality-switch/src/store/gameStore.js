@@ -44,9 +44,11 @@ const savedObjetIndex = localStorage.getItem('currentObjetIndex'); // **New**
 if (savedTime !== null) {
   gameState.timeLeft = parseInt(savedTime, 10);
 }
-if (savedRunning !== null) {
-  gameState.timerRunning = (savedRunning === 'true');
-}
+// Quickfix, because if it restarts, it restars at the rate of 2 secs per sec.
+// Todo find why ?
+// if (savedRunning !== null) {
+//   gameState.timerRunning = (savedRunning === 'true');
+// }
 if (savedIndiceIndex !== null) {
   gameState.currentIndiceIndex = JSON.parse(savedIndiceIndex);
 }
