@@ -7,7 +7,7 @@
           alt="Menu"
           usemap="#menuMap"
         />
-        <!-- Show Timer only if we are in 'menu' page (or if you want it globally, that’s up to you) -->
+        <!-- Show Timer only if we are in 'menu' page -->
         <div class="timer">
           {{ formatTime(gameState.timeLeft) }}
         </div>
@@ -66,12 +66,13 @@
         href="#"
         @click.prevent="openObjects"
       />
+      <!-- Machine TODO: now navigating to the machine page -->
       <area
         shape="rect"
         coords="438,875,678,1095"
-        alt="Machine TODO"
+        alt="Machine"
         href="#"
-        @click.prevent="onPenalty"
+        @click.prevent="openMachine"
       />
     </map>
   </div>
@@ -82,7 +83,9 @@ import { onMounted, ref } from 'vue';
 import { gameState } from '../store/gameStore.js';
 import imageMapResize from 'image-map-resizer';
 
-// Format time
+/**
+ * Format time as mm:ss
+ */
 const formatTime = (seconds) => {
   const mm = Math.floor(seconds / 60)
     .toString()
@@ -93,18 +96,25 @@ const formatTime = (seconds) => {
   return `${mm}:${ss}`;
 };
 
+/**
+ * Mute/unmute logic
+ */
 function onMuteUnmute() {
-  // Toggle muting
   gameState.isMuted = !gameState.isMuted;
-  // If muting => stop music, etc.
-  // If unmuting => resume music, etc.
+  // Optional: stop or resume music
 }
 
+/**
+ * Reset timer
+ */
 function onResetTimer() {
   // Example: reset to 3600 seconds
   gameState.timeLeft = 3600;
 }
 
+/**
+ * Play/pause timer
+ */
 function onPlayPause() {
   if (gameState.timerRunning) {
     stopTimer();
@@ -113,6 +123,9 @@ function onPlayPause() {
   }
 }
 
+/**
+ * Apply penalty to the timer
+ */
 function onPenalty() {
   if (gameState.timeLeft > gameState.penalty) {
     gameState.timeLeft -= gameState.penalty;
@@ -121,6 +134,9 @@ function onPenalty() {
   }
 }
 
+/**
+ * Numeric pad for Indices, Objects, or Codes
+ */
 function openIndices() {
   gameState.showNumericPad = true;
   gameState.numericPadContext = 'indices';
@@ -137,12 +153,19 @@ function openCodes() {
 }
 
 /**
- * Timer
+ * Navigate to the Machine page (wire-cutting puzzle)
+ */
+function openMachine() {
+  gameState.currentPage = 'machine';
+}
+
+/**
+ * Timer logic
  */
 let timerInterval = null;
 
 function startTimer() {
-  if (timerInterval) return;
+  if (timerInterval) return; // Avoid duplicates
   gameState.timerRunning = true;
   timerInterval = setInterval(() => {
     if (gameState.timeLeft > 0) {
@@ -165,7 +188,7 @@ function stopTimer() {
 
 onMounted(() => {
   imageMapResize();
-  // If the timer is marked as running in store, ensure we have an interval
+  // If the timer was active, make sure we start it
   if (gameState.timerRunning && !timerInterval) {
     startTimer();
   }
