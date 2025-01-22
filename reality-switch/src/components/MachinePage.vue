@@ -74,10 +74,11 @@
           :src="`/images/${resultImage}`"
           alt="Result"
           usemap="#resultMap"
+          @load="onResultImageLoad"
         />
         <map name="resultMap">
-          <!-- Invisible click area (similar to your 'Exit' coords)
-              that calls goBackToMenu -->
+          <!-- Invisible click area (similar to your 'Exit' coords
+               that calls goBackToMenu -->
           <area
             shape="rect"
             coords="558,37,674,155"
@@ -92,16 +93,17 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, watch, nextTick, onMounted } from 'vue';
 import { gameState } from '../store/gameStore.js';
 import imageMapResize from 'image-map-resizer';
 
 export default {
   setup() {
-    // Which wires are correct
+    // Define the correct wires
     const correctWires = [2, 4];
     const resultImage = ref('');
 
+    // Function to navigate back to the menu
     function goBackToMenu() {
       gameState.currentPage = 'menu';
     }
@@ -136,16 +138,35 @@ export default {
       }
     }
 
-    onMounted(() => {
-      // Make the image map responsive
+    /**
+     * Optional: Ensures imageMapResize is called when the result image loads.
+     * This can be helpful to ensure the image is fully loaded before resizing.
+     */
+    function onResultImageLoad() {
       imageMapResize();
+    }
+
+    onMounted(() => {
+      // Make the main image map responsive
+      imageMapResize();
+    });
+
+    // Watch for changes to resultImage and resize the image map when it changes
+    watch(resultImage, () => {
+      if (resultImage.value) {
+        // Wait for the DOM to update with the new image
+        nextTick(() => {
+          imageMapResize();
+        });
+      }
     });
 
     return {
       gameState,
       resultImage,
       cutWire,
-      goBackToMenu
+      goBackToMenu,
+      onResultImageLoad
     };
   }
 };
@@ -248,7 +269,7 @@ export default {
 .wire-5 {
   left: 85%;
   top: 49%;
-}
+} 
 
 /* 
   Result overlay uses the same "outer-center" approach 
