@@ -9,7 +9,8 @@ export const gameState = reactive({
   // Store the last card number entered
   lastEnteredCardNumber: null,
 
-  selectedWires: [],
+  // selectedWires: [],
+  cutWires: [],
 
   // Time in seconds. For example, 3600 => 60 minutes
   timeLeft: 3600,

@@ -110,6 +110,7 @@ function onMuteUnmute() {
 function onResetTimer() {
   // Example: reset to 3600 seconds
   gameState.timeLeft = 3600;
+  gameState.cutWires = []; //Also reset machine
 }
 
 /**
