@@ -48,7 +48,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import { gameState } from '../store/gameStore.js';
+import { useGameStore } from '../store/gameStore.js';
 import imageMapResize from 'image-map-resizer';
 
 // Define your tables here or import them if they are defined elsewhere
@@ -106,6 +106,8 @@ export default {
     const userCode = ref('');
     const resultImage = ref('');
 
+    const gameState = useGameStore();
+
     // Define exit area coordinates based on the natural image size
     const exitAreaCoordsMap = {
       '66.png': '558,37,674,155',
@@ -132,23 +134,26 @@ export default {
       const num = parseInt(cardNumber.value, 10);
       if (!num) return;
 
-      // **New:** Reset objet index if a different card is selected
       if (gameState.lastEnteredCardNumber !== num && props.context === 'objets') {
-        gameState.currentObjetIndex[num] = 0;
+        gameState.currentObjetIndex[num] = 0; // Removed .value
       }
 
       gameState.lastEnteredCardNumber = num;
 
       if (props.context === 'indices') {
-        if (INDICES_TABLE[num] && INDICES_TABLE[num].length > 0) {
-          // Get current indice index, default to 0
-          const currentIndex = gameState.currentIndiceIndex[num] || 0;
+        // Initialize currentIndiceIndex[num] if undefined
+        if (gameState.currentIndiceIndex[num] === undefined) { // Removed .value
+          gameState.currentIndiceIndex[num] = 0; // Removed .value
+        }
 
+        const currentIndex = gameState.currentIndiceIndex[num]; // Removed .value
+
+        if (INDICES_TABLE[num] && INDICES_TABLE[num].length > 0) {
           // Set resultImage
           resultImage.value = INDICES_TABLE[num][currentIndex];
 
           // Update the currentIndiceIndex for next time
-          gameState.currentIndiceIndex[num] = (currentIndex + 1) % INDICES_TABLE[num].length;
+          gameState.currentIndiceIndex[num] = (currentIndex + 1) % INDICES_TABLE[num].length; // Removed .value
         } else {
           // fallback
           resultImage.value = '66.png';
@@ -156,15 +161,19 @@ export default {
         step.value = 3; // show result
       }
       else if (props.context === 'objets') {
-        if (OBJETS_TABLE[num] && OBJETS_TABLE[num].length > 0) {
-          // Get current objet index, default to 0
-          const currentIndex = gameState.currentObjetIndex[num] || 0;
+        // Initialize currentObjetIndex[num] if undefined
+        if (gameState.currentObjetIndex[num] === undefined) { // Removed .value
+          gameState.currentObjetIndex[num] = 0; // Removed .value
+        }
 
+        const currentIndex = gameState.currentObjetIndex[num]; // Removed .value
+
+        if (OBJETS_TABLE[num] && OBJETS_TABLE[num].length > 0) {
           // Set resultImage
           resultImage.value = OBJETS_TABLE[num][currentIndex];
 
           // Update the currentObjetIndex for next time
-          gameState.currentObjetIndex[num] = (currentIndex + 1) % OBJETS_TABLE[num].length;
+          gameState.currentObjetIndex[num] = (currentIndex + 1) % OBJETS_TABLE[num].length; // Removed .value
         } else {
           // fallback
           resultImage.value = '54.png';

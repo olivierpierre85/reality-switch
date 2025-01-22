@@ -2,11 +2,7 @@
   <div class="menu-wrapper">
     <div class="outer-center">
       <div class="img-container">
-        <img
-          src="/images/menu.png"
-          alt="Menu"
-          usemap="#menuMap"
-        />
+        <img src="/images/menu.png" alt="Menu" usemap="#menuMap" />
         <!-- Show Timer only if we are in 'menu' page -->
         <div class="timer">
           {{ formatTime(gameState.timeLeft) }}
@@ -41,7 +37,7 @@
       <area
         shape="rect"
         coords="230,358,471,577"
-        alt="Play"
+        alt="Play/Pause"
         href="#"
         @click.prevent="onPlayPause"
       />
@@ -66,7 +62,7 @@
         href="#"
         @click.prevent="openObjects"
       />
-      <!-- Machine TODO: now navigating to the machine page -->
+      <!-- Machine: now navigating to the machine page -->
       <area
         shape="rect"
         coords="438,875,678,1095"
@@ -79,9 +75,12 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { gameState } from '../store/gameStore.js';
+import { onMounted, watch, nextTick } from 'vue';
+import { useGameStore } from '../store/gameStore.js';
 import imageMapResize from 'image-map-resizer';
+
+// Initialize the store
+const gameState = useGameStore();
 
 /**
  * Format time as mm:ss
@@ -101,26 +100,24 @@ const formatTime = (seconds) => {
  */
 function onMuteUnmute() {
   gameState.isMuted = !gameState.isMuted;
-  // Optional: stop or resume music
+  // Optional: stop or resume music based on isMuted
 }
 
 /**
  * Reset timer
  */
 function onResetTimer() {
-  // Example: reset to 3600 seconds
-  gameState.timeLeft = 3600;
-  gameState.cutWires = []; //Also reset machine
+  gameState.resetTimer();
 }
 
 /**
- * Play/pause timer
+ * Play/Pause timer
  */
 function onPlayPause() {
   if (gameState.timerRunning) {
-    stopTimer();
+    gameState.stopTimer();
   } else {
-    startTimer();
+    gameState.startTimer();
   }
 }
 
@@ -128,11 +125,7 @@ function onPlayPause() {
  * Apply penalty to the timer
  */
 function onPenalty() {
-  if (gameState.timeLeft > gameState.penalty) {
-    gameState.timeLeft -= gameState.penalty;
-  } else {
-    gameState.timeLeft = 0;
-  }
+  gameState.applyPenalty();
 }
 
 /**
@@ -145,7 +138,7 @@ function openIndices() {
 
 function openObjects() {
   gameState.showNumericPad = true;
-  gameState.numericPadContext = 'objets';
+  gameState.numericPadContext = 'objets'; 
 }
 
 function openCodes() {
@@ -161,39 +154,28 @@ function openMachine() {
 }
 
 /**
- * Timer logic
+ * Initialize the image map and start the timer if it's running
  */
-let timerInterval = null;
-
-function startTimer() {
-  if (timerInterval) return; // Avoid duplicates
-  gameState.timerRunning = true;
-  timerInterval = setInterval(() => {
-    if (gameState.timeLeft > 0) {
-      gameState.timeLeft--;
-    } else {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      gameState.timerRunning = false;
-    }
-  }, 1000);
-}
-
-function stopTimer() {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-  gameState.timerRunning = false;
-}
-
 onMounted(() => {
   imageMapResize();
-  // If the timer was active, make sure we start it
-  if (gameState.timerRunning && !timerInterval) {
-    startTimer();
+  if (gameState.timerRunning) {
+    gameState.startTimer();
   }
 });
+
+/**
+ * Watch for changes in gameState.timerRunning to start/stop the timer accordingly
+ */
+watch(
+  () => gameState.timerRunning,
+  (newVal) => {
+    if (newVal) {
+      gameState.startTimer();
+    } else {
+      gameState.stopTimer();
+    }
+  }
+);
 </script>
 
 <style scoped>

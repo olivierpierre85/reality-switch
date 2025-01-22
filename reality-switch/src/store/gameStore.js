@@ -1,60 +1,77 @@
-// store/gameStore.js
-import { reactive } from 'vue';
+// src/store/gameStore.js
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-export const gameState = reactive({
-  currentPage: 'menu',
-  showNumericPad: false,
-  numericPadContext: null,
+export const useGameStore = defineStore('game', () => {
+  // Reactive state
+  const timeLeft = ref(3600); // Initialize to 3600 seconds (1 hour)
+  const timerRunning = ref(false);
+  const cutWires = ref([]);
+  const isMuted = ref(false);
+  const currentPage = ref('menu');
+  const showNumericPad = ref(false);
+  const numericPadContext = ref('');
+  const penalty = ref(60); // Example penalty value
+  const lastEnteredCardNumber = ref(null);
+  const currentIndiceIndex = ref({});
+  const currentObjetIndex = ref({}); 
 
-  // Store the last card number entered
-  lastEnteredCardNumber: null,
+  // Internal timer reference
+  let timerInterval = null;
 
-  // selectedWires: [],
-  cutWires: [],
+  // Actions
+  function startTimer() {
+    if (timerRunning.value) return; // Prevent multiple timers
+    timerRunning.value = true;
+    timerInterval = setInterval(() => {
+      if (timeLeft.value > 0) {
+        timeLeft.value--;
+      } else {
+        stopTimer();
+      }
+    }, 1000);
+  }
 
-  // Time in seconds. For example, 3600 => 60 minutes
-  timeLeft: 3600,
-  timerRunning: false,
-  penalty: 60,  // e.g. 60 seconds penalty
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    timerRunning.value = false;
+  }
 
-  // For sound/music
-  isMuted: false,
-  isMusicPlaying: false,
+  function resetTimer() {
+    timeLeft.value = 3600; // Reset to 1 hour
+    cutWires.value = []; // Reset machine
+    stopTimer();
+  }
 
-  // Track current indice index per card number
-  currentIndiceIndex: {}, // e.g., { 7: 1, 8: 2, ... }
+  function applyPenalty() {
+    if (timeLeft.value > penalty.value) {
+      timeLeft.value -= penalty.value;
+    } else {
+      timeLeft.value = 0;
+    }
+  }
 
-  // **New:** Track current objet index per card number
-  currentObjetIndex: {}, // e.g., { 5: 1, 27: 2, ... }
+  return {
+    // State
+    timeLeft,
+    timerRunning,
+    cutWires,
+    isMuted,
+    currentPage,
+    showNumericPad,
+    numericPadContext,
+    penalty,
+    lastEnteredCardNumber,
+    currentIndiceIndex,
+    currentObjetIndex,
+
+    // Actions
+    startTimer,
+    stopTimer,
+    resetTimer,
+    applyPenalty,
+  };
 });
-
-// Persist to localStorage on page unload/reload
-window.addEventListener('beforeunload', () => {
-  localStorage.setItem('timeLeft', gameState.timeLeft);
-  localStorage.setItem('timerRunning', gameState.timerRunning);
-  localStorage.setItem('currentIndiceIndex', JSON.stringify(gameState.currentIndiceIndex));
-  
-  // **New:** Persist currentObjetIndex
-  localStorage.setItem('currentObjetIndex', JSON.stringify(gameState.currentObjetIndex));
-});
-
-// On page load, restore
-const savedTime = localStorage.getItem('timeLeft');
-const savedRunning = localStorage.getItem('timerRunning');
-const savedIndiceIndex = localStorage.getItem('currentIndiceIndex');
-const savedObjetIndex = localStorage.getItem('currentObjetIndex'); // **New**
-
-if (savedTime !== null) {
-  gameState.timeLeft = parseInt(savedTime, 10);
-}
-// Quickfix, because if it restarts, it restars at the rate of 2 secs per sec.
-// Todo find why ?
-// if (savedRunning !== null) {
-//   gameState.timerRunning = (savedRunning === 'true');
-// }
-if (savedIndiceIndex !== null) {
-  gameState.currentIndiceIndex = JSON.parse(savedIndiceIndex);
-}
-if (savedObjetIndex !== null) { // **New**
-  gameState.currentObjetIndex = JSON.parse(savedObjetIndex);
-}

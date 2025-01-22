@@ -68,8 +68,6 @@
     <!-- Result image displayed similarly to MenuPage -->
     <div v-if="resultImage" class="outer-center result-overlay">
       <div class="img-container">
-        <!-- Use a map for the result image, 
-            so we can define a clickable area to exit -->
         <img
           :src="`/images/${resultImage}`"
           alt="Result"
@@ -77,8 +75,6 @@
           @load="onResultImageLoad"
         />
         <map name="resultMap">
-          <!-- Invisible click area (similar to your 'Exit' coords
-               that calls goBackToMenu -->
           <area
             shape="rect"
             coords="558,37,674,155"
@@ -92,107 +88,95 @@
   </div>
 </template>
 
-<script>
-import { ref, watch, nextTick, onMounted } from 'vue';
-import { gameState } from '../store/gameStore.js';
+<script setup>
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { useGameStore } from '../store/gameStore.js';
 import imageMapResize from 'image-map-resizer';
 
-export default {
-  setup() {
-    // Define the correct wires
-    const correctWires = [2, 4];
-    const resultImage = ref('');
+const gameState = useGameStore();
 
-    // Function to navigate back to the menu
-    function goBackToMenu() {
-      gameState.currentPage = 'menu';
-    }
+// Define the correct wires
+const correctWires = [2, 4];
+const resultImage = ref('');
 
-    /**
-     * Called when a user clicks on a wire area.
-     * - If the wire is already cut, do nothing.
-     * - Otherwise, mark it as cut.
-     * - If it's incorrect, show error image (or go to error card).
-     * - If it's correct, check if all correct wires are cut => show success image.
-     */
-    function cutWire(wireNumber) {
-      // If wire is already cut, do nothing
-      if (gameState.cutWires.includes(wireNumber)) {
-        return;
-      }
+/**
+ * Function to navigate back to the menu
+ */
+function goBackToMenu() {
+  gameState.currentPage = 'menu';
+}
 
-      // Mark this wire as cut
-      gameState.cutWires.push(wireNumber);
-
-      // Check if it's a correct wire
-      if (!correctWires.includes(wireNumber)) {
-        // Wrong wire => show error image (or navigate)
-        resultImage.value = '46.png'; // Example error image
-      } else {
-        // Correct wire => check if all correct wires are now cut
-        const allCorrectCut = correctWires.every(w => gameState.cutWires.includes(w));
-        if (allCorrectCut) {
-          // Show success image
-          resultImage.value = '47.png'; // Example success image
-        }
-      }
-    }
-
-    /**
-     * Optional: Ensures imageMapResize is called when the result image loads.
-     * This can be helpful to ensure the image is fully loaded before resizing.
-     */
-    function onResultImageLoad() {
-      imageMapResize();
-    }
-
-    onMounted(() => {
-      // Make the main image map responsive
-      imageMapResize();
-    });
-
-    // Watch for changes to resultImage and resize the image map when it changes
-    watch(resultImage, () => {
-      if (resultImage.value) {
-        // Wait for the DOM to update with the new image
-        nextTick(() => {
-          imageMapResize();
-        });
-      }
-    });
-
-    return {
-      gameState,
-      resultImage,
-      cutWire,
-      goBackToMenu,
-      onResultImageLoad
-    };
+/**
+ * Called when a user clicks on a wire area.
+ */
+function cutWire(wireNumber) {
+  if (gameState.cutWires.includes(wireNumber)) {
+    return;
   }
-};
+
+  gameState.cutWires.push(wireNumber);
+
+  if (!correctWires.includes(wireNumber)) {
+    resultImage.value = '46.png'; // Example error image
+    gameState.stopTimer(); // Stop the global timer on error
+  } else {
+    const allCorrectCut = correctWires.every((w) =>
+      gameState.cutWires.includes(w)
+    );
+    if (allCorrectCut) {
+      resultImage.value = '47.png'; // Example success image
+      gameState.stopTimer(); // Stop the global timer on success
+    }
+  }
+}
+
+/**
+ * Handle image map resizing after result image loads
+ */
+function onResultImageLoad() {
+  imageMapResize();
+}
+
+/**
+ * Initialize image map
+ */
+onMounted(() => {
+  imageMapResize();
+});
+
+/**
+ * Watch for changes to resultImage and resize the image map when it changes
+ */
+watch(resultImage, () => {
+  if (resultImage.value) {
+    nextTick(() => {
+      imageMapResize();
+    });
+  }
+});
+
+/**
+ * Clean up when the component is unmounted
+ */
+onUnmounted(() => {
+  // If needed, perform any additional cleanup
+});
 </script>
 
 <style scoped>
 .machine-wrapper {
-  width: 100vw;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* Your existing styles */
 }
-
 .outer-center {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
-
 .img-container {
   position: relative;
   display: inline-block;
 }
-
 .img-container img {
   display: block;
   width: auto;
@@ -200,13 +184,6 @@ export default {
   max-width: 100%;
   max-height: 100vh;
 }
-
-/* 
-  Cross overlays:
-  We'll position them in percentages so that they track the image scale.
-  The percentages below assume the original Machine image is 695px wide x 1095px high.
-  If your image differs, adjust these carefully.
-*/
 .wire-cross {
   position: absolute;
   color: red;
@@ -281,17 +258,8 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7); /* semi-transparent overlay */
+  background: rgba(0, 0, 0, 0.7);
   z-index: 9999;
 }
 
-.close-button {
-  position: absolute;
-  bottom: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
-  padding: 0.5rem 1.5rem;
-  cursor: pointer;
-}
 </style>
